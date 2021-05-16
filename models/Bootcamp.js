@@ -12,12 +12,12 @@ const BootcampSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, 'Pleasse add a name'],
-    maxlength: [50, 'name can not be more than 50 characters'],
+    maxlength: [500, 'name can not be more than 50 characters'],
   },
   website: {
     type: String,
     match: [
-      '/https?://(www.)?[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/',
+      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/,
       'Please use a valid URL with HTTP or HTTPS',
     ],
   },
@@ -37,14 +37,13 @@ const BootcampSchema = new mongoose.Schema({
     required: [true, 'Please add an address'],
   },
   location: {
+    // GeoJSON Point
     type: {
-      type: String, // Don't do `{ location: { type: String } }`
-      enum: ['Point'], // 'location.type' must be 'Point'
-      required: true,
+      type: String,
+      enum: ['Point'],
     },
     coordinates: {
       type: [Number],
-      required: true,
       index: '2dsphere',
     },
     formattedAddress: String,
@@ -99,5 +98,4 @@ const BootcampSchema = new mongoose.Schema({
   },
 })
 
-
-module.exports = mongoose.model('Bootcamp', BootcampSchema )
+module.exports = mongoose.model('Bootcamp', BootcampSchema)
