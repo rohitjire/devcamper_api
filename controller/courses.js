@@ -8,25 +8,21 @@ const ErrorResponse = require('../utils/errorResponse')
 // @route GET /api/v1/bootcamps/:bootcampId/courses
 // @access Public
 exports.getCourses = asyncHandler(async (req, res, next) => {
-  let query
-
   if (req.params.bootcampId) {
-    query = Course.find({
+    const courses = await Course.find({
       bootcamp: req.params.bootcampId,
     })
-  } else {
-    query = Course.find().populate({
-      path: 'bootcamp',
-      select: 'name description',
+
+    res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses,
     })
+  } else {
+    res.status(200).json(res.advancedResults)
   }
   const courses = await query
 
-  res.status(200).json({
-    success: true,
-    count: courses.length,
-    data: courses,
-  })
 })
 
 // @desc Get a single course
@@ -101,10 +97,10 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`No Course with id of ${req.params.id}`, 404))
   }
 
-  await course.remove();
+  await course.remove()
 
   res.status(200).json({
     success: true,
-    data: "Course Deleted",
+    data: 'Course Deleted',
   })
 })
