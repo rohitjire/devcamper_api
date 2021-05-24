@@ -4,6 +4,8 @@ const ErrorResponse = require('../utils/errorResponse')
 const geocoder = require('../utils/geocoder')
 const path = require('path')
 const advancedResults = require('../middleware/advancedResults')
+
+
 // @desc Get all bootcamps
 // @route GET /api/v1/bootcamps
 // @access Public
