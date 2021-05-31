@@ -1,6 +1,8 @@
 const asyncHandler = require('../middleware/async')
 const User = require('../models/User')
 const ErrorResponse = require('../utils/errorResponse')
+const sendEmail = require('../utils/sendEmail')
+const crypto = require('crypto')
 
 // @desc Register User
 // @route POST /api/v1/auth/register
@@ -72,12 +74,64 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const resetToken = user.getResetPasswordToken()
 
   await user.save({ validateBeforeSave: false })
-  
+
+  // Create reset url
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/auth/resetpassword/${resetToken}`
+
+  const message = `Please make put request to : \n\n ${resetUrl}`
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password reset token',
+      message,
+    })
+
+    res.status(200).json({ success: true, data: 'Email sent' })
+  } catch (err) {
+    console.log(err)
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpire = undefined
+
+    await user.save({ validateBeforeSave: false })
+
+    return next(new ErrorResponse('email could not be sent', 500))
+  }
   res.status(200).json({
     success: true,
     data: user,
   })
 })
+
+// @desc Reset password
+// @route POST /api/v1/auth/resetpassword/:resettoken
+// @access Private
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  // Get hashed token
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.resettoken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return next(new ErrorResponse('Invalid token', 400));
+  }
+
+  // Set new password
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
