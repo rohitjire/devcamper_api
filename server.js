@@ -18,6 +18,7 @@ const bootcamps = require('./routes/bootcamps.js')
 const courses = require('./routes/courses.js')
 const auth = require('./routes/auth.js')
 const users = require('./routes/users.js')
+const reviews = require('./routes/reviews.js')
 
 const app = express()
 
@@ -43,6 +44,7 @@ app.use('/api/v1/bootcamps', bootcamps)
 app.use('/api/v1/courses', courses)
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
+app.use('/api/v1/reviews', reviews)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
